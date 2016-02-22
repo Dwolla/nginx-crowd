@@ -1,26 +1,33 @@
-FROM alpine:3.2
-ENV NGINX_VERSION 1.9.11
-RUN apk --update add ca-certificates openssl-dev pcre-dev zlib-dev curl-dev build-base && \
+FROM alpine:3.3
+RUN apk update && \
+    apk add nginx-lua lua5.1 lua5.1-sec lua5.1-socket ca-certificates && \
+    apk add lua-json lua5.1-lpeg --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && \
+    ln -s /usr/bin/lua5.1 /usr/bin/lua && \
+    apk add --virtual build-deps make curl && \
     mkdir -p /tmp/src && \
     cd /tmp/src && \
-    curl --location -o nginx-${NGINX_VERSION}.tgz https://github.com/nginx/nginx/archive/release-${NGINX_VERSION}.tar.gz && \
-    tar -zxvf nginx-${NGINX_VERSION}.tgz && \
-    curl --location -o ngx_http_auth_crowd_module.tgz https://github.com/Dwolla/ngx_http_auth_crowd_module/archive/v1.0.1.tar.gz && \
-    tar -zxvf ngx_http_auth_crowd_module.tgz && \
-    cd /tmp/src/nginx-release-${NGINX_VERSION} && \
-    auto/configure \
-        --with-http_ssl_module \
-        --with-http_gzip_static_module \
-        --prefix=/etc/nginx \
-        --http-log-path=/var/log/nginx/access.log \
-        --error-log-path=/var/log/nginx/error.log \
-        --add-module=/tmp/src/ngx_http_auth_crowd_module-1.0.1 \
-        --sbin-path=/usr/local/sbin/nginx && \
-    make && \
+    \
+    curl --location -o lua-spore.tgz https://github.com/fperrad/lua-Spore/archive/0.3.1.tar.gz && \
+    tar xzvf lua-spore.tgz && \
+    cd lua-Spore-0.3.1/ && \
     make install && \
+    cd /tmp/src && \
+    \
+    curl --location -o nginx-crowd-lua.tgz https://github.com/Dwolla/nginx-crowd-lua/archive/master.tar.gz && \
+    tar xzvf nginx-crowd-lua.tgz && \
+    mkdir -p /etc/nginx/lua /usr/local/share/lua/5.1/Spore/Middleware && \
+    cp nginx-crowd-lua-master/crowd-auth.lua /etc/nginx/lua && \
+    cp nginx-crowd-lua-master/Spore/Middleware/AdvancedCacheKey.lua /usr/local/share/lua/5.1/Spore/Middleware/AdvancedCacheKey.lua && \
+    \
+    curl --location -o lua-json.tgz https://github.com/harningt/luajson/archive/master.tar.gz && \
+    tar xzvf lua-json.tgz && \
+    cd luajson-master && \
+    make install && \
+    cd /tmp/src && \
+    \
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log && \
-    apk del wget build-base && \
+    apk del build-deps && \
     rm -rf /tmp/src && \
     rm -rf /var/cache/apk/*
 
