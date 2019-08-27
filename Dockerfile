@@ -1,7 +1,8 @@
 FROM alpine:3.9
 RUN apk update && \
     apk add nginx-mod-http-lua ca-certificates && \
-    apk add --virtual build-deps bash build-base curl lua5.1-dev luarocks5.1 && \
+    apk add --virtual build-deps bash build-base curl lua5.1-dev luarocks5.1 openssl-dev && \
+    /usr/bin/luarocks-5.1 install luasec && \
     /usr/bin/luarocks-5.1 install lua-Spore && \
     mkdir -p /tmp/src && \
     cd /tmp/src && \
