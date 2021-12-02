@@ -1,4 +1,4 @@
-FROM alpine:3.9
+FROM alpine:3.14
 RUN apk update && \
     apk add nginx-mod-http-lua ca-certificates && \
     apk add --virtual build-deps bash build-base curl lua5.1-dev luarocks5.1 openssl-dev && \
